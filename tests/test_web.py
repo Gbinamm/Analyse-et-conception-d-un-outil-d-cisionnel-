@@ -1,7 +1,10 @@
 import time
+import os
+import shutil
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
@@ -10,48 +13,78 @@ from webdriver_manager.chrome import ChromeDriverManager
 URL_APP = "http://localhost:8501"
 
 def run_selenium_test():
-    # Initialisation du driver Chrome
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service)
-    wait = WebDriverWait(driver, 15)
+    print("🚀 Tentative de démarrage de Selenium (Configuration Ultime)...")
+    
+    # Nettoyage d'un éventuel profil temporaire précédent
+    tmp_profile = os.path.join(os.getcwd(), "test_chrome_profile")
+    if os.path.exists(tmp_profile):
+        try:
+            shutil.rmtree(tmp_profile)
+        except:
+            pass
 
+    chrome_options = Options()
+    
+    # --- OPTIONS DE STABILITÉ POUR ENVIRONNEMENT RESTREINT ---
+    chrome_options.add_argument("--headless=new")  # Mode sans fenêtre
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument(f"--user-data-dir={tmp_profile}") # Force un profil propre
+    chrome_options.add_argument("--remote-debugging-pipe")
+    chrome_options.add_argument("--window-size=1920,1080")
+
+    driver = None
     try:
+        # Initialisation
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        wait = WebDriverWait(driver, 25) # Attente longue pour Streamlit
+
+        # 1. Accès à l'app
         driver.get(URL_APP)
-        
-        # 1. S'assurer qu'on est sur "Ajouter Entretien" dans le menu latéral
-        # Streamlit utilise des balises <label> pour les boutons radio du sidebar
-        nav_option = wait.until(EC.element_to_be_clickable(
+        print(f"✅ Page chargée : {driver.title}")
+        driver.save_screenshot("tests/1_accueil.png")
+
+        # 2. Navigation vers le formulaire (Menu latéral)
+        # On attend que le texte "Ajouter Entretien" apparaisse dans le sidebar
+        nav = wait.until(EC.element_to_be_clickable(
             (By.XPATH, "//label[contains(., 'Ajouter Entretien')]")
         ))
-        nav_option.click()
-        time.sleep(1) # Laisser le temps au formulaire de se charger
+        nav.click()
+        time.sleep(2) # Laisse l'UI respirer
+        print("✅ Navigation vers le formulaire effectuée.")
 
-        # 2. Remplir un champ texte (ex: le premier champ du premier onglet)
-        # On cherche un input dont le parent contient un label (ton code fait label.capitalize())
-        # Note : On cible l'input général pour l'exemple
-        inputs = wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "input")))
-        if inputs:
-            inputs[0].send_keys("Test Automatisé SAE")
+        # 3. Remplissage d'un champ texte
+        # On cible l'input dans le formulaire
+        input_field = wait.until(EC.presence_of_element_located(
+            (By.XPATH, "//div[@data-testid='stForm']//input")
+        ))
+        input_field.send_keys("Test SAE Selenium - " + time.strftime("%H:%M:%S"))
+        
+        # 4. Envoi du formulaire
+        btn = driver.find_element(By.XPATH, "//button[contains(., 'ENREGISTRER')]")
+        btn.click()
+        print("⏳ Bouton cliqué, attente du message de succès...")
 
-        # 3. Cliquer sur le bouton d'enregistrement
-        # Ton code utilise : st.form_submit_button("💾 ENREGISTRER L'ENTRETIEN")
-        submit_btn = driver.find_element(By.XPATH, "//button[contains(., 'ENREGISTRER')]")
-        submit_btn.click()
-
-        # 4. Vérifier le message de succès
-        # Ton code : st.success(f"✅ Dossier n°{new_id} enregistré !")
-        success_banner = wait.until(EC.presence_of_element_located(
+        # 5. Vérification du bandeau de succès (st.success)
+        success = wait.until(EC.presence_of_element_located(
             (By.XPATH, "//*[contains(text(), 'enregistré')]")
         ))
         
-        print("✅ SUCCÈS : Le test Selenium a validé l'enregistrement en base.")
+        print(f"🏆 TEST RÉUSSI : {success.text}")
+        driver.save_screenshot("tests/2_succes_final.png")
 
     except Exception as e:
-        print(f"❌ ERREUR : Le test a échoué. Détails : {e}")
+        print(f"❌ ÉCHEC : {e}")
+        if driver:
+            driver.save_screenshot("tests/erreur_debug.png")
+            print("📸 Capture d'écran d'erreur sauvegardée.")
     
     finally:
-        time.sleep(4) # Pour avoir le temps de prendre une capture d'écran pour le rapport
-        driver.quit()
+        if driver:
+            driver.quit()
+            print("👋 Navigateur fermé.")
 
 if __name__ == "__main__":
-    run_selenium_test() 
+    run_selenium_test()
