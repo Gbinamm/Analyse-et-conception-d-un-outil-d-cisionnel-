@@ -2,6 +2,7 @@ name: Build
 on:
   push:
     branches:
+      - master  # Ajusté car tu as indiqué utiliser 'master' précédemment
       - main
   pull_request:
     types: [opened, synchronize, reopened]
@@ -24,25 +25,27 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Installation des outils de tests
+          # Outils de tests
           pip install pytest pytest-cov selenium webdriver-manager
-          # Installation des dépendances de l'application
-          if [ -f Application/requirement.txt ]; then pip install -r Application/requirement.txt; fi
-          # Installation forcée des librairies spécifiques citées (au cas où elles manquent dans le requirement.txt)
+          # Dépendances de l'application (correction du chemin en minuscules)
+          if [ -f application/requirements.txt ]; then pip install -r application/requirements.txt; fi
+          # Librairies spécifiques pour ton projet
           pip install streamlit pandas openpyxl psycopg2-binary sqlalchemy
 
       - name: Run tests with coverage
         run: |
-          # On lance les tests du dossier /tests 
-          # On mesure la couverture sur le dossier /Application
-          # --cov=Application génère les stats pour votre code source
-          pytest tests/ --cov=Application --cov-report=xml:coverage.xml --junitxml=test-results.xml
+          # Exécution depuis la racine vers le dossier tests_unitaires
+          # La couverture est calculée sur le dossier application
+          pytest tests_unitaires/ --cov=application --cov-report=xml:coverage.xml --junitxml=test-results.xml
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@v4 # Version stable recommandée
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # Optionnel si tu utilises SonarCloud
         with:
           args: >
             -Dsonar.python.coverage.reportPaths=coverage.xml
             -Dsonar.python.xunit.reportPath=test-results.xml
+            -Dsonar.sources=application
+            -Dsonar.tests=tests_unitaires
