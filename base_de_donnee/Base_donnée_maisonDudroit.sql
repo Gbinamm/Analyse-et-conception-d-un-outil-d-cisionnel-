@@ -1,9 +1,9 @@
--------------------------------------------------------------------------
+﻿-------------------------------------------------------------------------
 -- 1. SCHÉMA DE STOCKAGE DES DONNÉES (ENTRETIEN, DEMANDE, SOLUTION)
 -------------------------------------------------------------------------
 
 -- Note : Assurez-vous d'être connecté à la base "DB_maison_droit_utf8"
-COMMENT ON DATABASE "DB_maison_droit_utf8" IS 'Base de données de la maison du droit à Vannes, SAE 501 2025-2026';
+COMMENT ON DATABASE "MD" IS 'Base de données de la maison du droit à Vannes, SAE 501 2025-2026';
 
 DROP TABLE IF EXISTS QUARTIER CASCADE;
 DROP TABLE IF EXISTS COMMUNE CASCADE;
