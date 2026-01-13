@@ -1,3 +1,3 @@
-PACKAGE : 
+Pour télécharger les packages, faire : 
 
-pip install pytest streamlit
+pip install -r application/requirements.txt

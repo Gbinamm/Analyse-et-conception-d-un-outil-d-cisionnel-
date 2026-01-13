@@ -1,0 +1,14 @@
+# --- Interface et Logique ---
+streamlit           # Interface utilisateur online 
+pandas              # Manipulation de données et fichiers Excel 
+openpyxl            # Moteur pour lire/écrire des fichiers Excel (XLSX) 
+
+# --- Base de Données ---
+psycopg2-binary     # Connecteur PostgreSQL 
+sqlalchemy          # Moteur de connexion utilisé par Pandas pour SQL
+
+# --- Tests et Qualité ---
+selenium            # Tests web automatisés 
+webdriver-manager   # Gestion automatique du driver Chrome pour Selenium
+pytest              # Framework de tests unitaires
+pytest-cov          # Génération de rapports de couverture pour SonarQube

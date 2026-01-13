@@ -1,13 +1,16 @@
-# logic.py
 import re
 
 def parse_comment_to_dict(comment):
     """
-    Fonction extraite pour être testée unitairement.
-    Identifie les listes de choix dans les commentaires SQL du backup MD.
+    Extrait les choix en ignorant les parenthèses de texte comme 'Enfant(s)'.
+    Cible spécifiquement les listes de type (1:A; 2:B) ou (1;2;3).
     """
     if not comment: return {}
+    
+    # Nettoyage : On ignore ce qui vient après ", Rubrique"
     text_to_parse = comment.split(', Rubrique')[0]
+    
+    # Regex : cherche le contenu entre parenthèses contenant des ';' ou ':'
     matches = re.findall(r'\(([^()]+)\)', text_to_parse)
     
     candidate = None
