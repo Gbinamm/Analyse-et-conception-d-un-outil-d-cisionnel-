@@ -1,9 +1,7 @@
 name: Build
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -25,15 +23,15 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov selenium webdriver-manager
-          pip install streamlit pandas openpyxl psycopg2-binary sqlalchemy
+          pip install pytest pytest-cov streamlit pandas openpyxl psycopg2-binary sqlalchemy
 
       - name: Run tests with coverage
         run: |
-          # On utilise bien le nom du dossier visible sur ton image
+          # On utilise le bon nom de dossier vu dans image_6f9927.png
           pytest tests_unitaires/ --cov=application --cov-report=xml:coverage.xml --junitxml=test-results.xml
 
       - name: SonarQube Scan
+        # Passage obligatoire en v6 pour corriger l'erreur de image_6fac8b.png
         uses: sonarsource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
