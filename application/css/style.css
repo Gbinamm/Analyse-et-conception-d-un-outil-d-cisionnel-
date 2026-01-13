@@ -1,0 +1,128 @@
+/* css/style.css */
+
+:root {
+    --font-titre: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-corps: "Calibri", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --gold-md: #AD9B6D;
+}
+
+/* 1. TITRE PRINCIPAL */
+.main-title {
+    font-family: var(--font-titre) !important;
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    color: #1B3656 !important;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
+
+/* --- COULEUR DES BARRES (DIVIDERS) --- */
+hr {
+    border: 0;
+    height: 3px !important;
+    background-color: var(--gold-md) !important; /* Barre en doré */
+    margin: 20px 0 !important;
+    opacity: 1 !important;
+}
+
+/* 2. TEXTE GÉNÉRAL */
+html, body, [class*="css"], .stText, label, button, input {
+    font-family: var(--font-corps) !important;
+}
+
+/* 3. TITRES DES ONGLETS */
+button[data-baseweb="tab"] p {
+    font-family: var(--font-titre) !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: #385c87 !important;
+}
+
+/* 4. LABELS DES FORMULAIRES */
+label {
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    color: #122132 !important;
+}
+
+/* 5. ENCADRÉ DU FORMULAIRE */
+div[data-testid="stForm"] {
+    border: 2px solid var(--gold-md) !important; /* Bordure dorée */
+    padding: 30px;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 6. STYLE NAVIGATION SIDEBAR */
+div[data-testid="stSidebar"] .stRadio > label {
+    font-weight: 700 !important;
+    color: #1B3656 !important;
+    margin-bottom: 10px;
+}
+
+/* Boutons de navigation */
+div[data-testid="stSidebar"] div[role="radiogroup"] label {
+    background-color: #f8f9fa;
+    border: 1px solid #eee;
+    padding: 12px 15px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+div[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    border-color: var(--gold-md);
+    background-color: #fdfaf2;
+}
+
+/* css/style.css */
+
+:root {
+    --dark-blue: #122132;
+    --gold-md: #AD9B6D;
+}
+
+/* --- BARRE LATÉRALE (SIDEBAR) --- */
+/* Couleur des options de navigation */
+div[data-testid="stSidebar"] div[role="radiogroup"] label p {
+    color: var(--dark-blue) !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+}
+
+/* Effet au survol des options de navigation */
+div[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background-color: #f0f2f6 !important;
+    border-radius: 8px;
+}
+
+/* --- MODALITÉS DES FORMULAIRES --- */
+/* Couleur des labels (titres des champs) */
+label p {
+    color: var(--dark-blue) !important;
+    font-weight: 700 !important;
+}
+
+/* Couleur du texte à l'intérieur des listes déroulantes (Selectbox) */
+div[data-baseweb="select"] div {
+    color: var(--dark-blue) !important;
+    font-weight: 500;
+}
+
+/* --- BARRES DE SÉPARATION --- */
+hr {
+    border: 0;
+    height: 2px !important;
+    background-color: var(--gold-md) !important;
+    margin: 15px 0 !important;
+}
+
+/* --- ENCADRÉ DU FORMULAIRE --- */
+div[data-testid="stForm"] {
+    border: 2px solid var(--gold-md) !important;
+    padding: 25px;
+    border-radius: 10px;
+    background-color: #ffffff;
+}
