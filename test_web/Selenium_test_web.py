@@ -13,7 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 URL_APP = "http://localhost:8501"
 
 def run_selenium_test():
-    print("🚀 Tentative de démarrage de Selenium (Configuration Ultime)...")
+    print("Démarrage de Selenium ...")
     
     # Nettoyage d'un éventuel profil temporaire précédent
     tmp_profile = os.path.join(os.getcwd(), "test_chrome_profile")
