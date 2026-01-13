@@ -1,0 +1,47 @@
+/* css/style.css */
+
+/* On définit une liste de polices : l'ordinateur prend la première qu'il trouve */
+:root {
+    --font-titre: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-corps: "Calibri", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* 1. TITRE PRINCIPAL */
+.main-title {
+    font-family: var(--font-titre) !important;
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    color: #1B3656 !important;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: -1px; /* Pour un look plus moderne */
+}
+
+/* 2. TEXTE GÉNÉRAL (Labels, boutons, inputs) */
+html, body, [class*="css"], .stText, label, button, input {
+    font-family: var(--font-corps) !important;
+}
+
+/* 3. TITRES DES ONGLETS (Entretien, Repérage...) */
+button[data-baseweb="tab"] p {
+    font-family: var(--font-titre) !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: #385c87 !important;
+}
+
+/* 4. LABELS DES FORMULAIRES (Nom, Prénom...) */
+label {
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+}
+
+/* 5. ENCADRÉ DU FORMULAIRE */
+div[data-testid="stForm"] {
+    border: 2px solid #AD9B6D !important;
+    padding: 30px;
+    border-radius: 12px;
+    background-color: #ffffff; /* Fond blanc pur pour la clarté */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Légère ombre pour le relief */
+}

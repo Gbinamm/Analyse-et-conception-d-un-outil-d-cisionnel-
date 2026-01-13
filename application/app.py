@@ -3,6 +3,7 @@ import pandas as pd
 import psycopg2
 from sqlalchemy import create_engine
 from datetime import date
+import os
 
 # IMPORTATION DE LA LOGIQUE
 try:
@@ -22,6 +23,14 @@ DB_CONFIG = {
 # Connexion avec encodage WIN1252 pour les accents
 conn_url = f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}?client_encoding=win1252"
 engine = create_engine(conn_url)
+
+# --- FONCTION POUR CHARGER LE CSS ---
+def local_css(file_name):
+    if os.path.exists(file_name):
+        with open(file_name) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    else:
+        st.error(f"⚠️ Fichier {file_name} introuvable.")
 
 @st.cache_data(ttl=60)
 def get_table_metadata(table_name):
@@ -83,9 +92,19 @@ def save_data(ent_data, list_dem, list_sol, dict_dem, dict_sol):
         if conn: conn.close()
 
 def main_ui():
-    """Interface utilisateur isolée pour permettre le test de couverture"""
+    """Interface utilisateur principale"""
     st.set_page_config(page_title="Maison du Droit", layout="wide")
-    st.title("⚖️ Gestion Maison du Droit - Vannes")
+
+    # 1. Chargement du CSS dès le début
+    local_css("css/style.css")
+
+    # 2. Sidebar avec Image
+    st.sidebar.image("Image/Maison_droit.png", use_container_width=True)
+    st.sidebar.markdown("---")
+    choice = st.sidebar.radio("Navigation", ["Ajouter Entretien", "Voir Données"])
+
+    # 3. Titre Principal (Utilise la classe CSS .main-title)
+    st.markdown('<h1 class="main-title">⚖️ Gestion Maison du Droit - Vannes</h1>', unsafe_allow_html=True)
     
     struct_ent = get_table_metadata("entretien")
     struct_dem = get_table_metadata("demande")
@@ -93,13 +112,14 @@ def main_ui():
 
     if not struct_ent:
         st.warning("⚠️ Base inaccessible.")
-        return None
-
-    choice = st.sidebar.radio("Navigation", ["Ajouter Entretien", "Voir Données"])
+        st.stop()
 
     if choice == "Ajouter Entretien":
+        # Note: "Nouveau dossier" a été supprimé ici
         with st.form("form_global", clear_on_submit=True):
             rubriques = sorted(list(set(col['rubrique'] for col in struct_ent)))
+            
+            # Les onglets seront agrandis via le CSS
             tabs = st.tabs(rubriques + ["Demandes & Solutions"])
             form_data = {}
             
@@ -126,7 +146,7 @@ def main_ui():
                 dict_sol = struct_sol[0]['choices'] if struct_sol else {}
                 sel_sol = st.multiselect("Natures des Solutions", list(dict_sol.values()))
                 
-            if st.form_submit_button("💾 ENREGISTRER"):
+            if st.form_submit_button("💾 ENREGISTRER L'ENTRETIEN", use_container_width=True):
                 save_data(form_data, sel_dem, sel_sol, dict_dem, dict_sol)
     else:
         st.header("Visualisation")
@@ -135,6 +155,7 @@ def main_ui():
             st.dataframe(df, use_container_width=True)
         except:
             st.error("Erreur de lecture.")
+    
     return choice
 
 if __name__ == "__main__":
