@@ -2,8 +2,8 @@ name: Build
 on:
   push:
     branches:
-      - master  # Ajusté car tu as indiqué utiliser 'master' précédemment
       - main
+      - master
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -25,24 +25,22 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Outils de tests
+          # Installation des outils indispensables pour tes tests
           pip install pytest pytest-cov selenium webdriver-manager
-          # Dépendances de l'application (correction du chemin en minuscules)
-          if [ -f application/requirements.txt ]; then pip install -r application/requirements.txt; fi
-          # Librairies spécifiques pour ton projet
+          # Installation des bibliothèques de ton application
           pip install streamlit pandas openpyxl psycopg2-binary sqlalchemy
 
       - name: Run tests with coverage
         run: |
-          # Exécution depuis la racine vers le dossier tests_unitaires
-          # La couverture est calculée sur le dossier application
+          # Correction de l'indentation et des chemins
           pytest tests_unitaires/ --cov=application --cov-report=xml:coverage.xml --junitxml=test-results.xml
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4 # Version stable recommandée
+        uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # Optionnel si tu utilises SonarCloud
+          # Ajout explicite de l'URL pour corriger l'erreur de connexion
+          SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
             -Dsonar.python.coverage.reportPaths=coverage.xml
