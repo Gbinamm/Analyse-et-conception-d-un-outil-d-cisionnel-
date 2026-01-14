@@ -4,6 +4,8 @@ import psycopg2
 from sqlalchemy import create_engine, text
 from datetime import date
 import os
+import plotly.express as px
+import re
 
 # IMPORTATION DE LA LOGIQUE
 try:
@@ -106,6 +108,26 @@ def get_table_metadata(table_name):
         return structure
     except Exception: return []
 
+def clean_val_with_meta(col_name, val, metadata):
+    """Traduit une valeur brute en utilisant les choix définis dans les métadonnées"""
+    val_str = str(val).strip()
+    # Recherche de la colonne dans les métadonnées (entretien, demande ou solution)
+    col_meta = next((m for m in metadata if m['name'] == col_name.lower()), None)
+    
+    if col_meta and col_meta['choices']:
+        mapping = col_meta['choices']
+        if val_str in mapping:
+            return mapping[val_str]
+    return val_str
+
+def process_var_for_stats(df, col_name, metadata):
+    """Prépare les données pour le graphique (gestion des multi-choix '|')"""
+    if col_name not in df.columns: return pd.Series()
+    temp = df[col_name].dropna().astype(str)
+    if temp.str.contains('\|').any():
+        temp = temp.str.split('|').explode()
+    return temp.apply(lambda x: clean_val_with_meta(col_name, x, metadata))
+
 def save_data(ent_data, list_dem, list_sol, dict_dem, dict_sol):
     """Enregistre les données dans PostgreSQL"""
     conn = None
@@ -170,6 +192,13 @@ def main_ui():
         if st.button("Modifier Valeurs", use_container_width=True):
             st.session_state.choice = "Modifier Valeurs"
 
+        st.markdown("---")
+
+        # Section ADMINISTRATION
+        st.markdown(f'<p style="color:#122132; font-weight:bold; margin-bottom:5px;">📊 VISUALISATION</p>', unsafe_allow_html=True)
+        if st.button(" Visualisation", use_container_width=True):
+            st.session_state.choice = "Visualisation"
+
     # On récupère le choix final
     choice = st.session_state.choice
         
@@ -206,9 +235,19 @@ def main_ui():
                         curr_col = cols[j % 2]
                         
                         if f['choices']:
-                            # Choix par liste déroulante [cite: 21, 23, 31, 33]
                             sel = curr_col.selectbox(label_ui, list(f['choices'].values()), key=f"ent_{f['name']}")
-                            form_data[f['name']] = next((k for k, v in f['choices'].items() if v == sel), None)
+                            # On récupère le code associé
+                            val_code = next((k for k, v in f['choices'].items() if v == sel), None)
+                            
+                            # Correction : Si la colonne est de type numérique (int ou smallint), on convertit en entier
+                            if val_code is not None and ('int' in f['type'].lower() or 'serial' in f['type'].lower()):
+                                try:
+                                    # On nettoie les éventuelles apostrophes parasites et on convertit
+                                    val_code = int(str(val_code).replace("'", "").strip())
+                                except ValueError:
+                                    pass # Garder la valeur telle quelle si la conversion échoue
+                                    
+                            form_data[f['name']] = val_code
                         
                         elif 'date' in f['type']:
                             # Saisie de date [cite: 17, 20]
@@ -313,6 +352,67 @@ def main_ui():
                     st.rerun()
                 except Exception as e:
                     st.error(f"Erreur SQL : {e}")
+
+    # --- SECTION : VISUALISATION (Reporting) ---
+    elif choice == "Visualisation":
+        st.header("📊 Analyse Statistique")
+        
+        # Récupération de toutes les données pour l'analyse [cite: 19, 74]
+        try:
+            df_full = pd.read_sql("SELECT * FROM public.entretien", engine)
+            if df_full.empty:
+                st.info("Aucune donnée disponible pour l'analyse.")
+                st.stop()
+        except Exception as e:
+            st.error(f"Erreur de lecture BDD : {e}")
+            st.stop()
+
+        # Fusion des métadonnées pour avoir accès aux choix de traduction
+        all_meta = struct_ent + struct_dem + struct_sol
+
+        # Menu interne comme dans reporting.py
+        viz_menu = st.radio("Type d'analyse :", ["Simple", "Croisement"], horizontal=True)
+
+        if viz_menu == "Simple":
+            cols_dispo = [c for c in df_full.columns if c not in ["num", "date_ent"]]
+            var = st.selectbox("Choisir la variable :", cols_dispo)
+            
+            if var:
+                series = process_var_for_stats(df_full, var, all_meta)
+                counts = series.value_counts().reset_index()
+                counts.columns = [var, 'Nombre']
+                
+                c1, c2 = st.columns([2, 1])
+                with c1:
+                    fig = px.pie(counts, values='Nombre', names=var, title=f"Répartition : {var}", hole=0.4)
+                    st.plotly_chart(fig, use_container_width=True)
+                with c2:
+                    st.dataframe(counts, hide_index=True)
+
+        elif viz_menu == "Croisement":
+            c1, c2 = st.columns(2)
+            cols_dispo = [c for c in df_full.columns if c not in ["num", "date_ent"]]
+            with c1: var1 = st.selectbox("Axe X", cols_dispo, index=0)
+            with c2: var2 = st.selectbox("Couleur", cols_dispo, index=min(1, len(cols_dispo)-1))
+            
+            # Logique de croisement robuste
+            clean_rows = []
+            for _, row in df_full.iterrows():
+                v1_list = str(row[var1]).split('|') if '|' in str(row[var1]) else [str(row[var1])]
+                v2_list = str(row[var2]).split('|') if '|' in str(row[var2]) else [str(row[var2])]
+                for v1 in v1_list:
+                    for v2 in v2_list:
+                        if v1.strip() and v2.strip() and v1 != "None" and v2 != "None":
+                            clean_rows.append({
+                                var1: clean_val_with_meta(var1, v1, all_meta),
+                                var2: clean_val_with_meta(var2, v2, all_meta)
+                            })
+            
+            df_cross = pd.DataFrame(clean_rows)
+            if not df_cross.empty:
+                grouped = df_cross.groupby([var1, var2]).size().reset_index(name='Nombre')
+                fig = px.bar(grouped, x=var1, y='Nombre', color=var2, barmode='group', text_auto=True)
+                st.plotly_chart(fig, use_container_width=True)
 
     return choice
 
