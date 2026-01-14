@@ -31,6 +31,7 @@ CREATE TABLE ENTRETIEN(
 );
 
 -- Commentaires d'origine (Source pour l'extraction automatique)
+COMMENT ON TABLE ENTRETIEN IS 'La table entretien est l''une des tables de stockage des données';
 COMMENT ON COLUMN ENTRETIEN.NUM IS 'Identifiant de l''entretien, Rubrique Entretien';
 COMMENT ON COLUMN ENTRETIEN.DATE_ENT IS 'Date de l''entretien, Valeur par défaut : jour courant, Rubrique Entretien';
 COMMENT ON COLUMN ENTRETIEN.MODE IS 'Mode de l''entretien (1 : RDV; 2 : Sans RDV;3 : Téléphonique;4 : Courrier;5 : Mail), Rubrique Entretien';
@@ -53,7 +54,9 @@ CREATE TABLE DEMANDE(
    NATURE VARCHAR(100) NOT NULL,
    PRIMARY KEY(NUM, POS)
 );
-COMMENT ON COLUMN DEMANDE.NATURE IS 'Nature de la demande (1a : Droit famille;2a : Logement;3a : Consommation;7a : Pénal), Rubrique Demande';
+COMMENT ON TABLE DEMANDE IS 'La table demande est l''une des tables de stockage des données';
+COMMENT ON COLUMN DEMANDE.POS IS 'Identifiant relatif de la demande (1;2;3;4;5;6;7;8;9;10), Rubrique Demande';
+COMMENT ON COLUMN DEMANDE.NATURE IS 'Nature de la demande (1a : Droit de la famille / des personnes Union;1b : Droit de la famille / des personnes Séparation / divorce;1c : Droit de la famille / des personnes PA / PC;1d : Droit de la famille / des personnes Droit de garde;1e : Droit de la famille / des personnes Autorité parentale;1f : Droit de la famille / des personnes Filiation adoption;1g : Droit de la famille / des personnes Régimes matrimoniaux;1h : Droit de la famille / des personnes Protection des majeurs;1i : Droit de la famille / des personnes Etat civil;1j : Droit de la famille / des personnes Successions;1k : Droit de la famille / des personnes Assistance éducative;2a : Droit du logement Litiges locatifs;2b : Droit du logement Expulsion;2c : Droit du logement Achat / vente d''un bien;2d : Droit du logement Copropriété;2e : Droit du logement Droit des biens;2f : Droit du logement Construction / urbanisme;2g : Droit du logement Conflit de voisinage;2h : Droit du logement Autre;3a : Droit de la consommation Crédit / reconnaissance de dette;3b : Droit de la consommation Téléphonie / internet;3c : Droit de la consommation Prestation de service;3d : Droit de la consommation Banque / Assurance;3e : Droit de la consommation Surendettement;3f : Droit de la consommation Autre;4a : Autres domaines du droit civil Responsabilité;4b : Autres domaines du droit civil Voies d''exécution;4c : Autres domaines du droit civil Procédure civile;4d : Autres domaines du droit civil Erreur médicale;4e : Autres domaines du droit civil Accident VTM;4f : Autres domaines du droit civil Autre;5a : Droit du travail / affaires / associations Exécution du contrat de travail;5b : Droit du travail / affaires / associations Rupture du contrat de travail;5c : Droit du travail / affaires / associations Droit des affaires / sociétés;5d : Droit du travail / affaires / associations Droit associatif;5e : Droit du travail / affaires / associations Autre;6a : Droit de la protection sociale Aides sociales;6b : Droit de la protection sociale Sécurité sociale;6c : Droit de la protection sociale Retraite;6d : Droit de la protection sociale Cotisations sociales;6e : Droit de la protection sociale Autre;7a : Droit pénal Auteur / mis en cause;7b : Droit pénal Victime;7c : Droit pénal Violences faites aux femmes;7d : Droit pénal Discriminations;7e : Droit pénal Procédure pénale;7f : Droit pénal Autre;8a : Droit administratif Litige avec une administration;8b : Droit administratif Statuts de la fonction publique;8c : Droit administratif Droit des étrangers;8d : Droit administratif Autre;9a : Démarches et formalités Terminologie juridique;9b : Démarches et formalités Aide juridictionnelle;9c : Démarches et formalités Autre), Rubrique Demande';
 
 CREATE TABLE SOLUTION(
    NUM INTEGER REFERENCES ENTRETIEN(NUM),
@@ -61,7 +64,12 @@ CREATE TABLE SOLUTION(
    NATURE VARCHAR(100) NOT NULL,
    PRIMARY KEY(NUM, POS)
 );
-COMMENT ON COLUMN SOLUTION.NATURE IS 'Nature de la solution (1 : Information;2a : Aide démarches;4a : Orientation avocat;5a : Conciliateur), Rubrique Solution';
+COMMENT ON TABLE SOLUTION IS 'La table solution est l''une des tables de stockage des données';
+COMMENT ON COLUMN SOLUTION.POS IS 'Identifiant relatif de la solution (1;2;3;4;5;6;7;8;9;10), Rubrique Solution';
+COMMENT ON COLUMN SOLUTION.NATURE IS 'Nature de la solution (1 : Information;2a : Aide aux démarches Saisine justice internet;2b : Aide aux démarches Aide CAF - ASF;2c : Aide aux démarches Autre démarche;3a : Aide à la rédaction Courrier;3b : Aide à la rédaction Requête;3c : Aide à la rédaction Autre;4a : Orientation professionnel du droit Avocat;4b : Orientation professionnel du droit Avocat mineur;4c : Orientation professionnel du droit Notaire;4d : Orientation professionnel du droit Huissier;4e : Orientation professionnel du droit Tribunal;4f : Orientation professionnel du droit Police / gendarmerie;4g : Orientation professionnel du droit Autre;5a : Orientation MARD Conciliateur de justice;5b : Orientation MARD Délégué du Défenseur des Droits;5c : Orientation MARD Médiation familiale;5d : Orientation MARD Médiation administrative;5e : Orientation MARD Médiation consommation;5f : Orientation MARD Médiation banque / assurance;6a : Orientation administration Mairie / EPCI;6b : Orientation administration DIRECCTE;6c : Orientation administration CAF;6d : Orientation administration Maison France Service;6e : Orientation administration Préfecture;6f : Orientation administration Impôts;6g : Orientation administration Autre;7a : Orientation association Aide aux victimes;7b : Orientation association Accès au Droit;7c : Orientation association ADIL;7d : Orientation association Association de consommateurs;7e : Orientation association Autre;8a : Orientation santé / social Travailleur social;8b : Orientation santé / social Professionnel de santé;8c : Orientation santé / social Professionnel jeunesse;8d : Orientation santé / social Autre;9a : Orientation organisme privé Protection juridique;9b : Orientation organisme privé Autre organisme privé), Rubrique Solution';
+
+COMMENT ON COLUMN DEMANDE.NUM IS 'Clé étrangère vers l''identifiant de l''entretien, Rubrique Entretien';
+COMMENT ON COLUMN SOLUTION.NUM IS 'Clé étrangère vers l''identifiant de l''entretien, Rubrique Entretien';
 
 -------------------------------------------------------------------------
 -- 2. CRÉATION DES TABLES DE MÉTADONNÉES
@@ -77,10 +85,18 @@ CREATE TABLE RUBRIQUE(
    POS SERIAL PRIMARY KEY,
    LIB VARCHAR(50) NOT NULL
 );
+COMMENT ON TABLE RUBRIQUE IS 'Métadonnées sur les rubriques de l''entretien pour générer les formulaires et les ordres SQL à la volée.';
+COMMENT ON COLUMN RUBRIQUE.POS IS 'Position logique de la rubrique lors de la collecte de données';
+COMMENT ON COLUMN RUBRIQUE.LIB IS 'Libellé de la rubrique';
 
 INSERT INTO RUBRIQUE (LIB) VALUES 
-('Entretien'), ('Usager'), ('Demande'), ('Solution'), 
-('Repérage du dispositif'), ('Résidence'), ('Type de partenaire');
+('Entretien'), 
+('Usager'), 
+('Demande'), 
+('Solution'), 
+('Repérage du dispositif'), 
+('Résidence'), 
+('Type de partenaire');
 
 CREATE TABLE VARIABLE(
    TAB VARCHAR(30),
@@ -97,6 +113,18 @@ CREATE TABLE VARIABLE(
    PRIMARY KEY(TAB, POS),
    UNIQUE(TAB, LIB)
 );
+COMMENT ON TABLE VARIABLE IS 'Métadonnées sur les variables pour générer les formulaires et les ordres SQL à la volée';
+COMMENT ON COLUMN VARIABLE.TAB IS 'Table de stockage de la variable';
+COMMENT ON COLUMN VARIABLE.POS IS 'Position de la variable dans table de stockage';
+COMMENT ON COLUMN VARIABLE.LIB IS 'Libellé de la variable dans la table de stockage';
+COMMENT ON COLUMN VARIABLE.POS_R IS 'Position de la variable dans sa rubrique';
+COMMENT ON COLUMN VARIABLE.COMMENTAIRE IS 'Aide à la signification de la variable';
+COMMENT ON COLUMN VARIABLE.MOIS_DEBUT_VALIDITE IS 'Début de la validité de la variable exprimée en numéro de mois dans l''année. Cette limite inférieure est incluse dans la validité. Valeur par défaut : 1';
+COMMENT ON COLUMN VARIABLE.MOIS_FIN_VALIDITE IS 'Fin de la validité de la variable exprimée en numéro de mois dans l''année. Cette limite supérieure est incluse dans la validité. Valeur par défaut : 12';
+COMMENT ON COLUMN VARIABLE.TYPE_V IS 'Type de la valeur (MOD; NUM; CHAINE)';
+COMMENT ON COLUMN VARIABLE.DEFVAL IS 'Position dans les modalités, ou la liste numérique ou valeur par défaut pour la plage numérique';
+COMMENT ON COLUMN VARIABLE.EST_CONTRAINTE IS 'Faut il faire un combo box (False) ou une boite de selection (True)';
+COMMENT ON COLUMN VARIABLE.RUBRIQUE IS 'Clé étrangère vers l''identifiant de la rubrique';
 
 CREATE TABLE PLAGE(
    TAB VARCHAR(30),
@@ -106,6 +134,11 @@ CREATE TABLE PLAGE(
    PRIMARY KEY(TAB, POS),
    FOREIGN KEY(TAB, POS) REFERENCES VARIABLE(TAB, POS)
 );
+COMMENT ON TABLE PLAGE IS 'Métadonnées sur les plages numériques pour générer les formulaires et les ordres SQL à la volée';
+COMMENT ON COLUMN PLAGE.TAB IS 'Table de stockage de la variable';
+COMMENT ON COLUMN PLAGE.POS IS 'Position de la variable dans table de stockage';
+COMMENT ON COLUMN PLAGE.VAL_MIN IS 'Valeur minimale si numérique, valeur par défaut : 0';
+COMMENT ON COLUMN PLAGE.VAL_MAX IS 'Valeur maximale si numérique Valeur par defaut : 128';
 
 CREATE TABLE MODALITE(
    TAB VARCHAR(30),
@@ -116,6 +149,12 @@ CREATE TABLE MODALITE(
    PRIMARY KEY(TAB, POS, CODE),
    FOREIGN KEY(TAB, POS) REFERENCES VARIABLE(TAB, POS)
 );
+COMMENT ON TABLE MODALITE IS 'Métadonnées sur les modalités des variables pour générer les formulaires et les ordres SQL à la volée';
+COMMENT ON COLUMN MODALITE.TAB IS 'Table de stockage de la variable';
+COMMENT ON COLUMN MODALITE.POS IS 'Position de la variable dans table de stockage';
+COMMENT ON COLUMN MODALITE.CODE IS 'Identifiant de la modalité';
+COMMENT ON COLUMN MODALITE.POS_M IS 'Position permettant un tri pour retrouver l''ordre logique des modalités';
+COMMENT ON COLUMN MODALITE.LIB_M IS 'Libellé de la modalité';
 
 CREATE TABLE VALEURS_C(
    TAB VARCHAR(30),
@@ -125,6 +164,11 @@ CREATE TABLE VALEURS_C(
    PRIMARY KEY(TAB, POS, POS_C),
    FOREIGN KEY(TAB, POS) REFERENCES VARIABLE(TAB, POS)
 );
+COMMENT ON TABLE VALEURS_C IS 'Métadonnées sur les éléments chaîne de caractères d''une liste pour générer les formulaires et les ordres SQL à la volée';
+COMMENT ON COLUMN VALEURS_C.TAB IS 'Table de stockage de la variable';
+COMMENT ON COLUMN VALEURS_C.POS IS 'Position de la variable dans table de stockage';
+COMMENT ON COLUMN VALEURS_C.POS_C IS 'Identifiant de l''élément de la liste';
+COMMENT ON COLUMN VALEURS_C.LIB IS 'Libellé de l''élément de la liste';
 
 -------------------------------------------------------------------------
 -- 3. REMPLISSAGE AUTOMATIQUE DES MÉTADONNÉES
@@ -194,9 +238,14 @@ WHERE pg_catalog.col_description(format('%s.%s',isc.table_schema,isc.table_name)
 CREATE TABLE AGGLO(
    CODE_A SERIAL PRIMARY KEY,
    NOM_A VARCHAR(100) NOT NULL,
-   ACRONYME VARCHAR(20) NOT NULL,
-   URL VARCHAR(100)
+   ACRONYME VARCHAR(20) NOT NULL
+   -- URL VARCHAR(100)
 );
+COMMENT ON TABLE AGGLO IS 'Les communautés de communes ou d''agglomération du morbihan Auray Quiberon Terre Atlantique, AQTA (Auray;Auray Gumenen Goaner-Parco Pointer;Belz;Brech;Camors;Carnac;Crac''h;Erdeven;Etel;Ile de Hoedic;Ile de Houat;Landaul;Landévant;La Trinité-sur-Mer;Locmariaquer;Locoal-Mendon;Ploemel;Plouharnel;Pluneret;Plumergat;Pluvigner;Quiberon;Ste-Anne-d''Auray;St-Philibert;St-Pierre-Quiberon) Golfe du Morbihan - Vannes agglomération, Vannes Agglo (Arradon;Arzon;Baden;Brandivy;Colpo;Elven;Grand-Champ;Ile d''Arz;Ile aux Moines;La Trinité-Surzur;Larmor-Baden;Le Bono;Le Hézo;Le Tour-du-Parc;Meucon;Monterblanc;Plaudren;Plescop;Ploeren;Plougoumelen;St-Armel;St-Avé;St-Gildas-de-Rhuys;St-Nolff;Sarzeau;Séné;Sulniac;Theix-Noyalo;Trédion;Treffléan;Vannes;Vannes Bourdonnaye;Vannes Kercado;Vannes Ménimur) Questembert Communauté, Questembert CO. (Questembert;Limerzel;Caden;Malensac;St-Gravé;Rochefort-en-Terre;Pluherlin;Molac;Le Cours;Larré;La Vraie-Croix;Berric;Lauzach) Arc Sud Bretagne, (Ambon;Arzal;Billiers;Damgan;La Roche-Bernard;Le Guerno;Marzan;Muzillac;Nivillac;Noyal-Muzillac;Péaule;St-Dolay) Oust à Brocéliande Communauté, Oust à Broceliande (Augan;Beignon;Bohal;Carentoir;Caro;Cournon;Guer;La Gascilly;Lizio;Malestroit;Missiriac;Monteneuf;Pleucadeuc;Réminiac;Ruffiac;St-Abraham;St-Congard;St-Guyomard;St-Laurent-sur-Oust;St-Malo-de-Beignon;St-Marcel;St-Martin-sur-Oust;St-Nicolas-du-Tertre;Sérent;Tréal) Ploërmel Communauté, (Brignac;Campénéac;Concoret;Cruguel;Évriguet;Les Forges de Lannouée;Gourhel;Guégon;Guillac;Guilliers;Helléan;Josselin;La Croix Helléan;La Grée-Saint-Laurent;La Trinité-Porhoët;Lantillac;Loyat;Mauron;Ménéac;Mohon;Montertelot;Néant-sur-Yvel;Ploërmel;St-Brieuc de Mauron;St-Léry;St-Malo-les-Trois-Fontaines;St-Servant;Taupont;Tréhorenteuc;Val d''Oust)';
+COMMENT ON COLUMN AGGLO.CODE_A IS 'Identifiant de la communauté de communes ou d''agglomération';
+COMMENT ON COLUMN AGGLO.NOM_A IS 'Nom complet de la communauté de communes ou d''agglomération';
+COMMENT ON COLUMN AGGLO.ACRONYME IS 'Acronyme fait des initiales de la communauté de communes ou d''agglomération ou nom court';
+-- COMMENT ON COLUMN AGGLO.URL IS 'URL du site de l''agglomération';
 
 INSERT INTO AGGLO (NOM_A, ACRONYME) VALUES 
 ('Auray Quiberon Terre Atlantique', 'AQTA'),
@@ -212,6 +261,11 @@ CREATE TABLE COMMUNE(
    INSEE VARCHAR(5),
    CODE_A INTEGER REFERENCES AGGLO(CODE_A)
 );
+COMMENT ON TABLE COMMUNE IS 'Les communes du morbihan';
+COMMENT ON COLUMN COMMUNE.CODE_C IS 'Identifiant de la commune';
+COMMENT ON COLUMN COMMUNE.NOM_C IS 'Nom de la commune';
+COMMENT ON COLUMN COMMUNE.INSEE IS 'Code INSEE de la commune pour le recensement de la population';
+-- COMMENT ON COLUMN COMMUNE.URL IS 'URL du site de la commune';
 
 INSERT INTO COMMUNE (NOM_C) 
 SELECT LIB FROM VALEURS_C WHERE TAB='ENTRETIEN' AND POS=14 AND LIB NOT LIKE 'HORS 56%' AND LIB NOT LIKE 'Vannes %';
@@ -228,6 +282,11 @@ CREATE TABLE QUARTIER(
    NOM_Q VARCHAR(100) NOT NULL,
    CODE_C INTEGER REFERENCES COMMUNE(CODE_C)
 );
+COMMENT ON TABLE QUARTIER IS 'Liste des quartiers prioritaires en 2025 dans le morbihan hors la zone de Lorient';
+COMMENT ON COLUMN QUARTIER.CODE_Q IS 'Identifiant du quartier prioritaire';
+COMMENT ON COLUMN QUARTIER.NOM_Q IS 'Nom complet du quartier prioritaire';
+-- COMMENT ON COLUMN QUARTIER.INSEE_IRIS IS 'Ménimur (QN05609M), Kercado (QN05608M), Bourdonnaye(), Gumenen Goaner-Parco Pointer (QN05601M)  https://www.insee.fr/fr/outil-interactif/7737357/map.html';
+
 
 INSERT INTO QUARTIER(NOM_Q, CODE_C) 
 SELECT LIB, (SELECT CODE_C FROM COMMUNE WHERE NOM_C='Vannes' LIMIT 1)

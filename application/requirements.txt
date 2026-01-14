@@ -12,3 +12,4 @@ selenium            # Tests web automatisés
 webdriver-manager   # Gestion automatique du driver Chrome pour Selenium
 pytest              # Framework de tests unitaires
 pytest-cov          # Génération de rapports de couverture pour SonarQube
+coverage

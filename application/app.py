@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import psycopg2
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text 
 from datetime import date
 import os
 import plotly.express as px
@@ -13,7 +13,7 @@ try:
 except ImportError:
     from logic import parse_comment_to_dict
 
-# 1. CONFIGURATION DE LA BASE DE DONNÉES
+# 1. CONFIGURATION
 DB_CONFIG = {
     "dbname": "MD",
     "user": "pgis",
@@ -48,7 +48,7 @@ MANUAL_CONFIG = {
 }
 
 # Connexion avec encodage WIN1252 pour les accents
-conn_url = f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}?client_encoding=utf8"
+conn_url = f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}?client_encoding=win1252"
 engine = create_engine(conn_url)
 
 def execute_sql(query, params=None):
@@ -68,40 +68,37 @@ def local_css(file_name):
 
 @st.cache_data(ttl=60)
 def get_table_metadata(table_name):
-    query = f"""
-        SELECT a.attname AS column_name, format_type(a.atttypid, a.atttypmod) AS data_type,
+    """Récupère la structure ET les modalités depuis la table 'modalite'"""
+    query_cols = f"""
+        SELECT a.attname AS column_name, a.attnum as pos,
+               format_type(a.atttypid, a.atttypmod) AS data_type,
                col_description(a.attrelid, a.attnum) AS comment, a.attnotnull AS is_required
         FROM pg_attribute a JOIN pg_class c ON a.attrelid = c.oid
         WHERE c.relname = '{table_name.lower()}' AND a.attnum > 0 AND NOT a.attisdropped
         ORDER BY a.attnum;
     """
     try:
-        df = pd.read_sql(query, engine)
+        df_cols = pd.read_sql(query_cols, engine)
         structure = []
-        for _, row in df.iterrows():
+        for _, row in df_cols.iterrows():
             col_name = row['column_name'].lower()
             if col_name in ['num', 'pos']: continue
-            
+
+            # Récupération des modalités réelles (ex: 1j, 8c...) en base
+            query_mod = f"SELECT code, lib_m FROM public.modalite WHERE tab = '{table_name.upper()}' AND pos = {row['pos']} ORDER BY pos_m"
+            df_mod = pd.read_sql(query_mod, engine)
+            db_choices = dict(zip(df_mod['code'], df_mod['lib_m']))
+
+            config = MANUAL_CONFIG.get(col_name, {})
             comment = row['comment'] or ""
-            
-            # Intégration de MANUAL_CONFIG [Correction Logique]
-            if col_name in MANUAL_CONFIG:
-                config = MANUAL_CONFIG[col_name]
-                display_label = config.get("label", col_name.capitalize())
-                rubrique = config.get("rubrique", "Général")
-                # On s'assure d'avoir un dictionnaire vide si choices est None
-                choices = config.get("choices") if config.get("choices") is not None else {}
-            else:
-                display_label = col_name.capitalize()
-                rubrique = comment.split("Rubrique ")[-1].strip() if "Rubrique " in comment else "Général"
-                choices = parse_comment_to_dict(comment)
+            rubrique = config.get("rubrique", comment.split("Rubrique ")[-1].strip() if "Rubrique " in comment else "Général")
             
             structure.append({
                 "name": col_name,
-                "display_label": display_label,
+                "display_label": config.get("label", col_name.capitalize()),
                 "type": row['data_type'],
                 "required": row['is_required'],
-                "choices": choices,
+                "choices": db_choices if db_choices else parse_comment_to_dict(comment),
                 "rubrique": rubrique,
                 "full_comment": comment
             })
@@ -160,9 +157,8 @@ def save_data(ent_data, list_dem, list_sol, dict_dem, dict_sol):
         st.error(f"Erreur SQL : {e}")
     finally:
         if conn: conn.close()
-
 def main_ui():
-    """Interface Utilisateur Streamlit"""
+    """Interface utilisateur isolée pour permettre le test de couverture"""
     st.set_page_config(page_title="Maison du Droit", layout="wide")
 
     # Chargement du style
@@ -171,33 +167,22 @@ def main_ui():
     if 'choice' not in st.session_state:
         st.session_state.choice = "Ajouter Entretien"
 
-    # Sidebar
+# REMPLACEMENT DU BLOC SIDEBAR (Lignes 186 à 213 environ)
     with st.sidebar:
         st.image("Image/Maison_droit.png", use_container_width=True)
-        st.markdown("---")  # Barre dorée #AD9B6D via CSS
-        
-        # Section GESTION
-        st.markdown(f'<p style="color:#122132; font-weight:bold; margin-bottom:5px;">📁 GESTION</p>', unsafe_allow_html=True)
-        if st.button("Ajouter Entretien", use_container_width=True):
-            st.session_state.choice = "Ajouter Entretien"
-        if st.button("Voir Données", use_container_width=True):
-            st.session_state.choice = "Voir Données"
-        
-        st.markdown("---") # Séparateur doré
-        
-        # Section ADMINISTRATION
-        st.markdown(f'<p style="color:#122132; font-weight:bold; margin-bottom:5px;">⚙️ CONFIGURATION</p>', unsafe_allow_html=True)
-        if st.button("Ajouter Variable", use_container_width=True):
-            st.session_state.choice = "Ajouter Variable"
-        if st.button("Modifier Valeurs", use_container_width=True):
-            st.session_state.choice = "Modifier Valeurs"
-
         st.markdown("---")
-
-        # Section ADMINISTRATION
-        st.markdown(f'<p style="color:#122132; font-weight:bold; margin-bottom:5px;">📊 VISUALISATION</p>', unsafe_allow_html=True)
-        if st.button(" Visualisation", use_container_width=True):
-            st.session_state.choice = "Visualisation"
+        
+        # Un seul menu Radio pour éviter les conflits dans les tests
+        st.markdown(f'<p style="color:#122132; font-weight:bold; margin-bottom:5px;">📂 NAVIGATION</p>', unsafe_allow_html=True)
+        
+        choice = st.radio(
+            "Menu Principal :",
+            ["Ajouter Entretien", "Voir Données", "Ajouter Variable", "Modifier Valeurs", "Visualisation"],
+            label_visibility="collapsed" # Cache le label pour le style
+        )
+        
+        # On synchronise le choix avec le session_state
+        st.session_state.choice = choice
 
     # On récupère le choix final
     choice = st.session_state.choice
@@ -208,12 +193,12 @@ def main_ui():
     struct_ent = get_table_metadata("entretien")
     struct_dem = get_table_metadata("demande")
     struct_sol = get_table_metadata("solution")
-    
+
     # ==============================================================================
     # GESTION DE LA NAVIGATION
     # ==============================================================================
 
-    # Vérification de sécurité pour la base de données
+    # --- VÉRIFICATION DE SÉCURITÉ ---
     if not struct_ent:
         st.warning("⚠️ Impossible de se connecter à la base de données ou la table est vide.")
         st.stop()
@@ -221,7 +206,7 @@ def main_ui():
     # --- SECTION : AJOUTER ENTRETIEN ---
     if choice == "Ajouter Entretien":
         with st.form("form_global", clear_on_submit=True):
-            # Récupération des rubriques [cite: 17, 21, 25, 37, 39]
+            # Récupération et tri des rubriques uniques #
             rubriques = sorted(list(set(col['rubrique'] for col in struct_ent)))
             tabs = st.tabs(rubriques + ["Demandes & Solutions"])
             form_data = {}
@@ -231,41 +216,48 @@ def main_ui():
                     fields = [f for f in struct_ent if f['rubrique'] == rub]
                     cols = st.columns(2)
                     for j, f in enumerate(fields):
+                        # Gestion du label (Priorité au display_label défini en Python)
                         label_ui = f"{f.get('display_label', f['name'].capitalize())} {'*' if f['required'] else ''}"
                         curr_col = cols[j % 2]
                         
-                        if f['choices']:
+                        # 1. CAS DES LISTES DÉROULANTES (MODALITÉS)
+                        if f['choices']: #
                             sel = curr_col.selectbox(label_ui, list(f['choices'].values()), key=f"ent_{f['name']}")
-                            # On récupère le code associé
+                            # Récupération du code (ex: '1')
                             val_code = next((k for k, v in f['choices'].items() if v == sel), None)
                             
-                            # Correction : Si la colonne est de type numérique (int ou smallint), on convertit en entier
+                            # Conversion forcée si la colonne attend un nombre (smallint/int)
                             if val_code is not None and ('int' in f['type'].lower() or 'serial' in f['type'].lower()):
                                 try:
-                                    # On nettoie les éventuelles apostrophes parasites et on convertit
+                                    # Nettoyage des apostrophes parasites pour éviter l'erreur SQL
                                     val_code = int(str(val_code).replace("'", "").strip())
                                 except ValueError:
-                                    pass # Garder la valeur telle quelle si la conversion échoue
+                                    pass 
                                     
                             form_data[f['name']] = val_code
                         
-                        elif 'date' in f['type']:
-                            # Saisie de date [cite: 17, 20]
+                        # 2. CAS DES DATES
+                        elif 'date' in f['type']: #
                             form_data[f['name']] = curr_col.date_input(label_ui, key=f"ent_{f['name']}")
                         
-                        elif 'int' in f['type'] or 'smallint' in f['type']:
-                            # Saisie numérique [cite: 18, 25, 29]
+                        # 3. CAS DES NOMBRES SAISIS À LA MAIN
+                        elif 'int' in f['type'] or 'smallint' in f['type']: #
                             form_data[f['name']] = curr_col.number_input(label_ui, min_value=0, step=1, key=f"ent_{f['name']}")
                         
-                        else:
-                            # Saisie texte [cite: 18, 27, 36, 40]
+                        # 4. CAS DU TEXTE LIBRE
+                        else: #
                             form_data[f['name']] = curr_col.text_input(label_ui, key=f"ent_{f['name']}")
             
             with tabs[-1]:
+                # Gestion des Demandes (Multi-sélection)
                 dict_dem = struct_dem[0]['choices'] if struct_dem else {}
-                sel_dem = st.multiselect("Natures des Demandes", list(dict_dem.values())) # [cite: 16]
+                sel_dem = st.multiselect("Natures des Demandes", list(dict_dem.values())) #
+                
+                # Gestion des Solutions (Multi-sélection)
                 dict_sol = struct_sol[0]['choices'] if struct_sol else {}
-                sel_sol = st.multiselect("Natures des Solutions", list(dict_sol.values())) # [cite: 58]
+                sel_sol = st.multiselect("Natures des Solutions", list(dict_sol.values())) #
+            
+            # Validation finale
             if st.form_submit_button("💾 ENREGISTRER L'ENTRETIEN", use_container_width=True):
                 save_data(form_data, sel_dem, sel_sol, dict_dem, dict_sol)
 
@@ -320,11 +312,13 @@ def main_ui():
         for s in struct_sol: all_vars.append(f"solution - {s['name']}")
         
         selected_full = st.selectbox("Sélectionnez la question à modifier :", all_vars)
-        target_tab, target_col = selected_full.split(" - ")
+        if selected_full and " - " in str(selected_full):
+            target_tab, target_col = str(selected_full).split(" - ")
+        else:
+            st.stop() # Arrête proprement si la sélection est invalide
         
         # Récupération des données actuelles
-        current_data = next(v for v in (struct_ent if target_tab=="entretien" else struct_dem if target_tab=="demande" else struct_sol) if v['name'] == target_col)
-        
+        current_data = next(v for v in (struct_ent if target_tab=="entretien" else struct_dem if target_tab=="demande" else struct_sol) if v['name'] == target_col)        
         st.write(f"**Rubrique actuelle :** {current_data['rubrique']}")
         
         with st.form("edit_modalities"):
