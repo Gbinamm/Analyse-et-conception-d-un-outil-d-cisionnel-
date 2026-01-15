@@ -1,3 +1,5 @@
+# Téléchargement des packages : 
+
 Pour télécharger les packages, faire : 
 
 pip install -r application/requirements.txt
@@ -7,19 +9,24 @@ ou faire :
 
 pip install -r application/requirements.txt --user
 
+# Lancement du serveur et mise en place de la base de donnée: 
 
-Pour lancer les test web : 
+1. Ouvrir l'application pgadmin
+2. Démarrer le serveur 
+3. Lancer une nouvelle connection avec : 
+4. Remplir le fichier avec ces informations : 
 
-python test_web/Selenium_test_web.py
+        Nom: Choisir un nom  pour la connection 
+        Hôte: localhost 
+        Port: 5437
+        Nom utilisateur: pgis 
+        Mot de passe: pgis
+5. Création de la base de donnée en faisant un clique droit sur base de données, puis cliquer sur Ajouter une base de données. 
 
-Pour lancer les tests unitaires : 
+!!! Choisir le nom MD pour la base de données !!! (Pour correspondre avec le paramétrage de l'application python et permet donc un GET et un POST des données)
 
-pytest tests_unitaires/ --cov=application
-
-
-Changement de la base de donnée: 
-
-TRUNCATE TABLE public.demande, public.solution, public.entretien RESTART IDENTITY CASCADE;
+6. Faire un clique droit sur la base de données précédement crée puis amller sur restaurer et parcourir le dossier de l'application pour se trouver dans 
+"H:\SAE_finale\Analyse-et-conception-d-un-outil-d-cisionnel-\base_de_donnee" et prendre le fichier "MaisonDuDroit_bd_avec_donnees_final.backup"
 
 # Insertion des données dans la table entretien, demande à l'aide de la commande : 
 
@@ -54,3 +61,18 @@ INSERT INTO public.solution (num, pos, nature) VALUES
 # Changement de la taille de la variable origine de la table entretien : 
 
 ALTER TABLE public.entretien ALTER COLUMN origine TYPE character varying(50);
+
+# Lancement des test unitaires, web
+Pour lancer les test web : 
+
+python test_web/Selenium_test_web.py
+
+Pour lancer les tests unitaires : 
+
+pytest tests_unitaires/ --cov=application
+
+
+Changement de la base de donnée: 
+
+TRUNCATE TABLE public.demande, public.solution, public.entretien RESTART IDENTITY CASCADE;
+
